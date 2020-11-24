@@ -39,7 +39,7 @@ def add_white(signal,scale=0.1):
         Returns-
             signal + noise: numpy array of noisy signal
     """
-    np.random.seed(5)
+    np.random.seed(10)
     noise = np.random.normal(0, scale, size=signal.shape) # white noise   
     return signal + noise
 
@@ -52,7 +52,7 @@ def add_tv_white(signal,tv_scale=0.1):
         Returns-
             signal + noise: numpy array of noisy signal
     """
-    np.random.seed(5)
+    np.random.seed(10)
     slope = np.arange(signal.shape[0])/signal.shape[0]  # goes up to 1 (linear increase)
     noise = slope * np.random.normal(0, tv_scale, size=signal.shape)
     return signal + noise
@@ -67,7 +67,7 @@ def get_stats(noisy_signal,w_size):
             mu: numpy array of each window average
             sigma: numpy array of each window variance
     """
-    # reshape signal into windows
+    # pad signal so that while loop doesn't miss any data
     signal=np.concatenate((np.zeros(w_size//2),noisy_signal,np.zeros(w_size//2)),axis=0)
     L=signal.shape[0]
     start=w_size//2
@@ -101,6 +101,7 @@ def wien_f(noisy_signal,w_size,slide,w_type='rect'):
         if w_type == "rect":
             cur=noisy_signal[start:start+w_size]
         elif w_type == "hanning":
+            # hanning has amplitude 1/2
             cur=noisy_signal[start:start+w_size]*2*np.hanning(w_size)
         X = fft.fft(cur)
         X_psd= abs(X)**2/w_size
@@ -114,9 +115,9 @@ def wien_f(noisy_signal,w_size,slide,w_type='rect'):
     # if not a whole multiple of w_size, process rest also
     cur=noisy_signal[start:]
     X = fft.fft(cur)
-    X_psd= abs(X)**2/w_size
-    X_est=X_psd-noise_est
-    X_est[X_est<0]=0  # magnitude must be non-negative
+    X_psd = abs(X)**2/w_size
+    X_est = X_psd-noise_est
+    X_est[X_est<0] = 0  # magnitude must be non-negative
     phi=(X_est)/(X_psd)
     filt_X = phi*X
     filt_sig[start:]=filt_sig[start:]+np.real(fft.ifft(filt_X))*overlap_fact
