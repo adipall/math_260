@@ -67,7 +67,7 @@ def get_stats(noisy_signal,w_size):
             mu: numpy array of each window average
             sigma: numpy array of each window variance
     """
-    # pad signal so that while loop doesn't miss any data
+    # pad signal so that while loop doesn't miss any data (will introduce some edge error)
     signal=np.concatenate((np.zeros(w_size//2),noisy_signal,np.zeros(w_size//2)),axis=0)
     L=signal.shape[0]
     start=w_size//2
@@ -147,6 +147,7 @@ if __name__ == "__main__":
     w_size=500
     slide=60
     
+    # Testing with generated signals
     for sig_type in ['imp','sin']:
         for noise_type in ['white','tv-white']:
             # define signal
@@ -170,8 +171,8 @@ if __name__ == "__main__":
                 plt.savefig('./demo/'+sig_type+'_'+noise_type+'_'+w_type+'.png')
                 plt.show()
                 
-    ####### Testing with audio #########
-    w_size = 1000 # need larger window for the audio because of high sampling rate
+    # Testing with audio files
+    w_size = 1000 # need larger window for the audio because of higher sampling rate
     slide  = 120
     noise_type = 'white'
     scale=0.01
